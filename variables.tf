@@ -20,10 +20,22 @@ variable "cloudwatch_namespace" {
   default     = "MikroTik"
 }
 
+variable "create_poll_schedule" {
+  description = "Create EventBridge schedule to poll SNMP"
+  type        = bool
+  default     = true
+}
+
 variable "poll_interval" {
   description = "Polling interval in EventBridge rate() expression"
   type        = string
   default     = "rate(5 minutes)"
+}
+
+variable "poll_enabled" {
+  description = "Enable or disable polling"
+  type        = bool
+  default     = true
 }
 
 variable "lambda_memory" {
@@ -66,6 +78,12 @@ variable "vpc_id" {
   description = "VPC ID for creating security group. Required if create_security_group is true"
   type        = string
   default     = ""
+}
+
+variable "name" {
+  description = "Name prefix for all resources"
+  type        = string
+  default     = "mikrotik-snmp"
 }
 
 variable "resource_prefix" {

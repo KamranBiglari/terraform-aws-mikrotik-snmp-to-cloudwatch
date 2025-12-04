@@ -10,10 +10,14 @@ jobs:
   terraform:
     name: 'Terraform fmt and validate'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -28,3 +32,35 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Install terraform-docs
+        if: github.event_name == 'push'
+        run: |
+          curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+          terraform-docs --version
+
+      - name: Generate README with terraform-docs
+        if: github.event_name == 'push'
+        run: terraform-docs markdown table --output-file README.md --output-mode inject .
+
+      - name: Check for README changes
+        if: github.event_name == 'push'
+        id: readme_changes
+        run: |
+          if git diff --quiet README.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push README
+        if: github.event_name == 'push' && steps.readme_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add README.md
+          git commit -m "docs: Update README with terraform-docs [skip ci]"
+          git push

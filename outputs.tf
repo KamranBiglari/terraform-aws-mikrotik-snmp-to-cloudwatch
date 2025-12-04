@@ -13,3 +13,8 @@ output "lambda_security_group_id" {
   description = "Security group ID of the Lambda function (if created)"
   value       = local.create_sg ? aws_security_group.lambda_sg[0].id : null
 }
+
+output "snmp_poll_schedule" {
+  description = "Scheduler Event for polling SNMP"
+  value = var.create_poll_schedule ? module.snmp_poll_schedule[0] : null
+}

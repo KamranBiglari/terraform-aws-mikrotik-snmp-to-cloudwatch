@@ -8,7 +8,7 @@ locals {
 
 resource "aws_security_group" "lambda_sg" {
   count       = local.create_sg ? 1 : 0
-  name        = "${local.name_prefix}mikrotik-snmp-lambda-${local.router_suffix}-sg"
+  name        = "${local.name_prefix}${var.name}-lambda-${local.router_suffix}-sg"
   description = "Security group for MikroTik SNMP Lambda"
   vpc_id      = var.vpc_id
 
@@ -20,7 +20,7 @@ resource "aws_security_group" "lambda_sg" {
   }
 
   tags = {
-    Name = "${local.name_prefix}mikrotik-snmp-lambda-${local.router_suffix}-sg"
+    Name = "${local.name_prefix}${var.name}-lambda-${local.router_suffix}-sg"
   }
 }
 
@@ -28,10 +28,10 @@ module "mikrotik_snmp_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "~> 8.0"
 
-  function_name = "${local.name_prefix}mikrotik-snmp-to-cloudwatch-${local.router_suffix}"
+  function_name = "${local.name_prefix}${var.name}-cw-${local.router_suffix}"
   description   = "Lambda to poll MikroTik SNMP and push to CloudWatch"
   handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.13"
+  runtime       = "python3.12"
   publish       = true
 
   source_path = [
@@ -45,9 +45,9 @@ module "mikrotik_snmp_lambda" {
     }
   ]
 
-  build_in_docker   = true
-  docker_image      = "public.ecr.aws/sam/build-python3.13:latest"
-  docker_build_root = "${path.module}/lambda_src"
+  build_in_docker = true
+  docker_image    = "public.ecr.aws/sam/build-python3.12:latest"
+  docker_file     = "${path.module}/lambda_src/Dockerfile"
 
   memory_size = var.lambda_memory
   timeout     = var.lambda_timeout
@@ -82,22 +82,25 @@ module "mikrotik_snmp_lambda" {
 }
 
 module "snmp_poll_schedule" {
+  count  = var.create_poll_schedule ? 1 : 0
   source  = "terraform-aws-modules/eventbridge/aws"
   version = "~> 2.0"
 
   create = true
   create_bus = false
 
+  role_name = "${local.name_prefix}${var.name}-cw-${local.router_suffix}-eb-role"
+
   rules = {
-    "poll-mikrotik" = {
+    "${var.resource_prefix}${var.name}-poll" = {
       description         = "Trigger MikroTik SNMP poll Lambda"
       schedule_expression = var.poll_interval
-      state               = true
+      state               = var.poll_enabled ? "ENABLED" : "DISABLED"
     }
   }
 
   targets = {
-    "poll-mikrotik" = [
+    "${var.resource_prefix}${var.name}-poll" = [
       {
         name = "MikroTikPollTarget"
         arn  = module.mikrotik_snmp_lambda.lambda_function_arn
