@@ -37,7 +37,7 @@ jobs:
         if: github.event_name == 'push'
         id: fmt_changes
         run: |
-          if git diff --quiet; then
+          if git diff --quiet '*.tf' 'README.md'; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
@@ -48,7 +48,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add -A
+          git add '*.tf' 'README.md'
           git commit -m "style: Auto-format Terraform files [skip ci]"
 
       - name: Install terraform-docs
