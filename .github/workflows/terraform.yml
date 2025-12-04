@@ -34,37 +34,19 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Install terraform-docs
-        if: github.event_name == 'push'
-        run: |
-          curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
-          tar -xzf terraform-docs.tar.gz
-          chmod +x terraform-docs
-          sudo mv terraform-docs /usr/local/bin/
-          terraform-docs --version
-
-      - name: Generate README with terraform-docs
-        if: github.event_name == 'push'
-        run: terraform-docs markdown --output-file README.md .
-
       - name: Commit and push changes
         if: github.event_name == 'push'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # Add terraform-docs config if it exists and is not tracked
-          if [ -f .terraform-docs.yml ]; then
-            git add .terraform-docs.yml
-          fi
-          
           # Check if there are any changes
-          if ! git diff --quiet '*.tf' 'README.md' || ! git diff --cached --quiet; then
-            # Stage all relevant changes
-            git add '*.tf' 'README.md'
+          if ! git diff --quiet '*.tf'; then
+            # Stage Terraform file changes
+            git add '*.tf'
             
             # Commit changes
-            git commit -m "chore: Auto-format Terraform files and update README [skip ci]"
+            git commit -m "style: Auto-format Terraform files [skip ci]"
             
             # Pull with rebase and push
             git pull --rebase origin main || true
