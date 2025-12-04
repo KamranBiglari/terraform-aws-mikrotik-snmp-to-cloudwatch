@@ -16,5 +16,5 @@ output "lambda_security_group_id" {
 
 output "snmp_poll_schedule" {
   description = "Scheduler Event for polling SNMP"
-  value = var.create_poll_schedule ? module.snmp_poll_schedule[0] : null
+  value       = var.create_poll_schedule ? module.snmp_poll_schedule[0] : null
 }

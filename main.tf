@@ -1,9 +1,9 @@
 locals {
-  create_sg           = var.create_security_group && length(var.vpc_subnet_ids) > 0 && length(var.vpc_security_group_ids) == 0
-  use_vpc             = length(var.vpc_subnet_ids) > 0
-  security_group_ids  = local.create_sg ? [aws_security_group.lambda_sg[0].id] : var.vpc_security_group_ids
-  name_prefix         = var.resource_prefix != "" ? "${var.resource_prefix}-" : ""
-  router_suffix       = replace(var.router_ip, ".", "-")
+  create_sg          = var.create_security_group && length(var.vpc_subnet_ids) > 0 && length(var.vpc_security_group_ids) == 0
+  use_vpc            = length(var.vpc_subnet_ids) > 0
+  security_group_ids = local.create_sg ? [aws_security_group.lambda_sg[0].id] : var.vpc_security_group_ids
+  name_prefix        = var.resource_prefix != "" ? "${var.resource_prefix}-" : ""
+  router_suffix      = replace(var.router_ip, ".", "-")
 }
 
 resource "aws_security_group" "lambda_sg" {
@@ -61,7 +61,7 @@ module "mikrotik_snmp_lambda" {
   }
 
   attach_cloudwatch_logs_policy = true
-  
+
   attach_policy_json = true
   policy_json = jsonencode({
     Version = "2012-10-17"
@@ -82,11 +82,11 @@ module "mikrotik_snmp_lambda" {
 }
 
 module "snmp_poll_schedule" {
-  count  = var.create_poll_schedule ? 1 : 0
+  count   = var.create_poll_schedule ? 1 : 0
   source  = "terraform-aws-modules/eventbridge/aws"
   version = "~> 2.0"
 
-  create = true
+  create     = true
   create_bus = false
 
   role_name = "${local.name_prefix}${var.name}-cw-${local.router_suffix}-eb-role"
