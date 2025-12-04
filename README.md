@@ -76,23 +76,28 @@ $(go env GOPATH)/src/github.com/terraform-docs/terraform-docs/bin/$(uname | tr '
 
 To run and generate documentation into README within a directory:
 
-```bash
-terraform-docs markdown table --output-file README.md --output-mode inject /path/to/module
+```hcl
+module "mikrotik_snmp" {
+  source  = "KamranBiglari/mikrotik-snmp-to-cloudwatch/aws"
+  version = "~> 1.0"
+
+  router_ip            = "192.168.88.1"
+  snmp_communities     = ["private"]
+  cloudwatch_namespace = "MikroTik"
+  poll_interval        = "rate(5 minutes)"
+
+  snmp_oids = [
+    "1.3.6.1.2.1.1.3.0",           # uptime
+    "1.3.6.1.4.1.14988.1.1.3.10.0", # CPU
+    "1.3.6.1.2.1.2.2.1.16.1",       # bytes out
+    "1.3.6.1.2.1.2.2.1.10.1",       # bytes in
+  ]
+}
 ```
 
 Check [`output`] configuration for more details and examples.
 
-### Using docker
-
-terraform-docs can be run as a container by mounting a directory with `.tf`
-files in it and run the following command:
-
-```bash
-docker run --rm --volume "$(pwd):/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:0.17.0 markdown /terraform-docs
-```
-
-If `output.file` is not enabled for this module, generated output can be redirected
-back to a file:
+If your router is on a private network, run Lambda in your VPC:
 
 ```bash
 docker run --rm --volume "$(pwd):/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:0.17.0 markdown /terraform-docs > doc.md

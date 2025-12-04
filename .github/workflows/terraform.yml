@@ -45,7 +45,7 @@ jobs:
 
       - name: Generate README with terraform-docs
         if: github.event_name == 'push'
-        run: terraform-docs .
+        run: terraform-docs markdown --output-file README.md .
 
       - name: Commit and push changes
         if: github.event_name == 'push'
