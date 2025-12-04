@@ -1,7 +1,7 @@
 
 module "mikrotik_snmp_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
-  version = "~> 7.0"
+  version = "~> 8.0"
 
   function_name = "mikrotik-snmp-to-cloudwatch-${replace(var.router_ip, ".", "-")}"
   description   = "Lambda to poll MikroTik SNMP and push to CloudWatch"
