@@ -1,12 +1,37 @@
+locals {
+  create_sg           = var.create_security_group && length(var.vpc_subnet_ids) > 0 && length(var.vpc_security_group_ids) == 0
+  use_vpc             = length(var.vpc_subnet_ids) > 0
+  security_group_ids  = local.create_sg ? [aws_security_group.lambda_sg[0].id] : var.vpc_security_group_ids
+  name_prefix         = var.resource_prefix != "" ? "${var.resource_prefix}-" : ""
+  router_suffix       = replace(var.router_ip, ".", "-")
+}
+
+resource "aws_security_group" "lambda_sg" {
+  count       = local.create_sg ? 1 : 0
+  name        = "${local.name_prefix}mikrotik-snmp-lambda-${local.router_suffix}-sg"
+  description = "Security group for MikroTik SNMP Lambda"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.name_prefix}mikrotik-snmp-lambda-${local.router_suffix}-sg"
+  }
+}
 
 module "mikrotik_snmp_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "~> 8.0"
 
-  function_name = "mikrotik-snmp-to-cloudwatch-${replace(var.router_ip, ".", "-")}"
+  function_name = "${local.name_prefix}mikrotik-snmp-to-cloudwatch-${local.router_suffix}"
   description   = "Lambda to poll MikroTik SNMP and push to CloudWatch"
   handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.11"
+  runtime       = "python3.13"
   publish       = true
 
   source_path = [
@@ -21,7 +46,7 @@ module "mikrotik_snmp_lambda" {
   ]
 
   build_in_docker   = true
-  docker_image      = "public.ecr.aws/sam/build-python3.11:latest"
+  docker_image      = "public.ecr.aws/sam/build-python3.13:latest"
   docker_build_root = "${path.module}/lambda_src"
 
   memory_size = var.lambda_memory
@@ -36,6 +61,24 @@ module "mikrotik_snmp_lambda" {
   }
 
   attach_cloudwatch_logs_policy = true
+  
+  attach_policy_json = true
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:PutMetricData"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  vpc_subnet_ids         = local.use_vpc ? var.vpc_subnet_ids : null
+  vpc_security_group_ids = local.use_vpc ? local.security_group_ids : null
+  attach_network_policy  = local.use_vpc
 }
 
 module "snmp_poll_schedule" {

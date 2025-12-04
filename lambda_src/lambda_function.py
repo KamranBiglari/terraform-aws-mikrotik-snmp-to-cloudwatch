@@ -1,6 +1,7 @@
 
 import boto3
 import os
+from datetime import datetime
 from pysnmp.hlapi import *
 
 cloudwatch = boto3.client('cloudwatch')
@@ -68,10 +69,12 @@ def lambda_handler(event, context):
                     MetricData=[
                         {
                             'MetricName': metric_name,
-                            'Value': value,
-                            'Unit': 'Count'  # default unit
+                            'Value': float(value),
+                            'Unit': 'None',
+                            'Timestamp': datetime.utcnow()
                         }
                     ]
                 )
+                log(f"Successfully pushed metric {metric_name}")
             except Exception as e:
                 print(f"Error pushing metric {metric_name} to CloudWatch: {str(e)}")

@@ -8,3 +8,8 @@ output "cloudwatch_namespace" {
   description = "CloudWatch namespace used for the metrics"
   value       = var.cloudwatch_namespace
 }
+
+output "lambda_security_group_id" {
+  description = "Security group ID of the Lambda function (if created)"
+  value       = local.create_sg ? aws_security_group.lambda_sg[0].id : null
+}

@@ -43,3 +43,33 @@ variable "enable_verbose_logging" {
   type        = bool
   default     = false
 }
+
+variable "vpc_subnet_ids" {
+  description = "List of subnet IDs for Lambda VPC configuration. Leave empty to run Lambda outside VPC"
+  type        = list(string)
+  default     = []
+}
+
+variable "vpc_security_group_ids" {
+  description = "List of security group IDs for Lambda VPC configuration. Leave empty if create_security_group is true"
+  type        = list(string)
+  default     = []
+}
+
+variable "create_security_group" {
+  description = "Create a security group for Lambda. Only used if vpc_subnet_ids is provided and vpc_security_group_ids is empty"
+  type        = bool
+  default     = false
+}
+
+variable "vpc_id" {
+  description = "VPC ID for creating security group. Required if create_security_group is true"
+  type        = string
+  default     = ""
+}
+
+variable "resource_prefix" {
+  description = "Prefix to add to all resource names. If empty, uses default naming"
+  type        = string
+  default     = ""
+}
