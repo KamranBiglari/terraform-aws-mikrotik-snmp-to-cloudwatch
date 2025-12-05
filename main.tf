@@ -80,18 +80,24 @@ module "mikrotik_snmp_lambda" {
   vpc_security_group_ids = local.use_vpc ? local.security_group_ids : null
   attach_network_policy  = local.use_vpc
 
-
+  allowed_triggers = var.create_poll_schedule ? {
+    SnmpPoll = {
+      principal  = "events.amazonaws.com"
+      source_arn = module.snmp_poll_schedule[0].eventbridge_rule_arns["${var.resource_prefix}${var.name}-poll"]
+    }
+  } : {}
 
 }
 
 module "snmp_poll_schedule" {
   count   = var.create_poll_schedule ? 1 : 0
   source  = "terraform-aws-modules/eventbridge/aws"
-  version = "~> 2.0"
+  version = "~> 4.0"
 
   create               = true
   create_bus           = false
   attach_lambda_policy = true
+  lambda_target_arns   = [module.mikrotik_snmp_lambda.lambda_function_arn]
   role_name            = "${local.name_prefix}${var.name}-cw-${local.router_suffix}-eb-role"
 
   rules = {
