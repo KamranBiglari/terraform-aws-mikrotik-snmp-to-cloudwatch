@@ -45,12 +45,12 @@ module "mikrotik_snmp_lambda" {
     }
   ]
 
-  build_in_docker = true
-  docker_image    = "public.ecr.aws/sam/build-python3.12:latest"
-  docker_file     = "${path.module}/lambda_src/Dockerfile"
+  build_in_docker                   = true
+  docker_image                      = "public.ecr.aws/sam/build-python3.12:latest"
+  docker_file                       = "${path.module}/lambda_src/Dockerfile"
   cloudwatch_logs_retention_in_days = var.lambda_cloudwatch_logs_retention_in_days
-  memory_size = var.lambda_memory
-  timeout     = var.lambda_timeout
+  memory_size                       = var.lambda_memory
+  timeout                           = var.lambda_timeout
 
   environment_variables = {
     ROUTER_IP            = var.router_ip
