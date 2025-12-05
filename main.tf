@@ -89,10 +89,10 @@ module "snmp_poll_schedule" {
   source  = "terraform-aws-modules/eventbridge/aws"
   version = "~> 2.0"
 
-  create     = true
-  create_bus = false
+  create               = true
+  create_bus           = false
   attach_lambda_policy = true
-  role_name = "${local.name_prefix}${var.name}-cw-${local.router_suffix}-eb-role"
+  role_name            = "${local.name_prefix}${var.name}-cw-${local.router_suffix}-eb-role"
 
   rules = {
     "${var.resource_prefix}${var.name}-poll" = {
