@@ -80,12 +80,7 @@ module "mikrotik_snmp_lambda" {
   vpc_security_group_ids = local.use_vpc ? local.security_group_ids : null
   attach_network_policy  = local.use_vpc
 
-  allowed_triggers = {
-    ScanAmiRule = {
-      principal  = "events.amazonaws.com"
-      source_arn = module.snmp_poll_schedule.eventbridge_rule_arns["${var.resource_prefix}${var.name}-poll"]
-    }
-  }
+
 
 }
 
@@ -96,7 +91,7 @@ module "snmp_poll_schedule" {
 
   create     = true
   create_bus = false
-
+  attach_lambda_policy = true
   role_name = "${local.name_prefix}${var.name}-cw-${local.router_suffix}-eb-role"
 
   rules = {
