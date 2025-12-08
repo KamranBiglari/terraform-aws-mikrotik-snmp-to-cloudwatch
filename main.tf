@@ -58,6 +58,7 @@ module "mikrotik_snmp_lambda" {
     SNMP_OIDS            = join(",", var.snmp_oids)
     CLOUDWATCH_NAMESPACE = var.cloudwatch_namespace
     VERBOSE_LOGGING      = tostring(var.enable_verbose_logging)
+    INSTANCE_NAME        = var.instance_name != "" ? var.instance_name : var.router_ip
   }
 
   attach_cloudwatch_logs_policy = true

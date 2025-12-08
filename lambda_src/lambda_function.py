@@ -11,6 +11,7 @@ COMMUNITIES = os.environ['SNMP_COMMUNITIES'].split(",")
 SNMP_OIDS = os.environ['SNMP_OIDS'].split(",")
 CLOUDWATCH_NAMESPACE = os.environ.get('CLOUDWATCH_NAMESPACE', 'MikroTik')
 VERBOSE_LOGGING = os.environ.get('VERBOSE_LOGGING', 'false').lower() == 'true'
+INSTANCE_NAME = os.environ.get('INSTANCE_NAME', ROUTER_IP)
 
 def log(message):
     if VERBOSE_LOGGING:
@@ -74,8 +75,8 @@ def lambda_handler(event, context):
                             'Timestamp': datetime.utcnow(),
                             'Dimensions': [
                                 {
-                                    'Name': 'MikrotikIP',
-                                    'Value': ROUTER_IP
+                                    'Name': 'InstanceName',
+                                    'Value': INSTANCE_NAME
                                 }
                             ]
                         }

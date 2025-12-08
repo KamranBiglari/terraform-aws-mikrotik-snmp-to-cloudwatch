@@ -97,3 +97,9 @@ variable "resource_prefix" {
   type        = string
   default     = ""
 }
+
+variable "instance_name" {
+  description = "Custom instance name for CloudWatch dimension. If not provided, defaults to router_ip"
+  type        = string
+  default     = ""
+}
