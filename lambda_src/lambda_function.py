@@ -71,7 +71,13 @@ def lambda_handler(event, context):
                             'MetricName': metric_name,
                             'Value': float(value),
                             'Unit': 'None',
-                            'Timestamp': datetime.utcnow()
+                            'Timestamp': datetime.utcnow(),
+                            'Dimensions': [
+                                {
+                                    'Name': 'MikrotikIP',
+                                    'Value': ROUTER_IP
+                                }
+                            ]
                         }
                     ]
                 )
